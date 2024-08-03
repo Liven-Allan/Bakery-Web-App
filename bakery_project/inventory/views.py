@@ -14,7 +14,7 @@ class InventoryTransactionListCreate(generics.ListCreateAPIView):
     queryset = InventoryTransaction.objects.all()
     serializer_class = InventoryTransactionSerializer
 
-# delete item from inventory
-class InventoryItemDetailView(generics.RetrieveDestroyAPIView):
+# Handle item retrieval, update, and deletion
+class InventoryItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = InventoryItem.objects.all()
     serializer_class = InventoryItemSerializer

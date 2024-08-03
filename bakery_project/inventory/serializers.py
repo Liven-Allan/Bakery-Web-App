@@ -6,7 +6,7 @@ from .models import InventoryItem, InventoryTransaction
 class InventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryItem
-        fields = ['id', 'name', 'category', 'unit_price', 'stock_level', 'reorder_level']
+        fields = ['id', 'name', 'category', 'unit_price', 'reorder_level']
 
 class InventoryTransactionSerializer(serializers.ModelSerializer):
     class Meta:
