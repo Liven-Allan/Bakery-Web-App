@@ -1,4 +1,4 @@
-// src/modal/EditInventoryModal.js
+// src/modal/inventory_list_modal/EditInventoryModal.js
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import './EditInventoryModal.css'; // Ensure this path is correct

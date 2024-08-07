@@ -26,3 +26,30 @@ class InventoryTransaction(models.Model):
 
     def __str__(self):
         return f'{self.transaction_type} - {self.product.name}'
+
+# Production Management
+class ProductionRecord(models.Model):
+    productName = models.CharField(max_length=255, null=True)  # New field for product name
+    rawMaterials = models.ManyToManyField(InventoryItem, related_name='production_records', blank=True)  # Changed field
+    quantityProduced = models.PositiveIntegerField()
+    quantityUsed = models.JSONField(default=list, blank=True)  # Change to JSONField
+    productionDate = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Production Record {self.productName} - {self.productionDate}'
+    
+# Production Transaction Model
+class ProductionTransaction(models.Model):
+    TRANSACTION_TYPES = [
+        ('Addition', 'Addition'),
+        ('Update', 'Update'),
+    ]
+
+    production_record = models.ForeignKey(ProductionRecord, on_delete=models.CASCADE)
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    quantity = models.PositiveIntegerField()
+    transaction_date = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(blank=True)
+
+    def __str__(self):
+        return f'{self.transaction_type} - {self.production_record.productName} on {self.transaction_date}'    

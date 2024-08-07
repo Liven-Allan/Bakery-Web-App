@@ -1,0 +1,56 @@
+/* src/production_layout/production_list/ProductionList.css */
+
+.filters {
+  margin-bottom: 20px;
+}
+
+.filters input, .filters select {
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px 0; /* Add margin to space out the button from other elements */
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+.pagination {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* Add pagination styling as needed */
+.vertical-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.vertical-list li {
+  padding: 4px 0;
+}

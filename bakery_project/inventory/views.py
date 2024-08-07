@@ -1,15 +1,12 @@
 # inventory/views.py
 
 from rest_framework import generics
-from .models import InventoryItem, InventoryTransaction
-from .serializers import InventoryItemSerializer, InventoryTransactionSerializer
+from .models import InventoryItem, InventoryTransaction, ProductionRecord, ProductionTransaction
+from .serializers import InventoryItemSerializer, InventoryTransactionSerializer, ProductionRecordSerializer, ProductionTransactionSerializer
 
 #chart
-from django.db.models import Sum, F
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from django.utils.dateparse import parse_datetime
-import datetime
 
 # add item to inventory
 class InventoryItemListCreate(generics.ListCreateAPIView):
@@ -48,3 +45,37 @@ def historical_data(request):
         })
 
     return JsonResponse(result, safe=False)
+
+# Production Management
+# Add production record
+class ProductionRecordListCreate(generics.ListCreateAPIView):
+    queryset = ProductionRecord.objects.all()
+    serializer_class = ProductionRecordSerializer
+
+    def perform_create(self, serializer):
+        production_record = serializer.save()
+        ProductionTransaction.objects.create(
+            production_record=production_record,
+            transaction_type='Addition',
+            quantity=production_record.quantityProduced,
+            remarks='Initial production entry'
+        )
+
+# Retrieve, update, and delete production record
+class ProductionRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductionRecord.objects.all()
+    serializer_class = ProductionRecordSerializer
+
+    def perform_update(self, serializer):
+        production_record = serializer.save()
+        ProductionTransaction.objects.create(
+            production_record=production_record,
+            transaction_type='Update',
+            quantity=production_record.quantityProduced,
+            remarks='Production record updated'
+        )
+
+# Add transaction record
+class ProductionTransactionListCreate(generics.ListCreateAPIView):
+    queryset = ProductionTransaction.objects.all()
+    serializer_class = ProductionTransactionSerializer

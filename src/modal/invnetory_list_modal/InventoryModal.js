@@ -1,4 +1,4 @@
-// src/InventoryModal.js
+// src/modal/inventory_list_modal/InventoryModal.js
 
 import React, { useState } from 'react';
 import Modal from 'react-modal';
