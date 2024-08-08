@@ -35,6 +35,7 @@ class ProductionRecord(models.Model):
     quantityProduced = models.PositiveIntegerField()
     quantityUsed = models.JSONField(default=list, blank=True)  # Change to JSONField
     productionDate = models.DateField(auto_now_add=True)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # New field for unit price
 
     def __str__(self):
         return f'Production Record {self.productName} - {self.productionDate}'
@@ -53,6 +54,7 @@ class ProductionTransaction(models.Model):
     quantityUsed = models.JSONField(default=list, blank=True)  # Add quantityUsed field
     transaction_date = models.DateTimeField(auto_now_add=True)
     remarks = models.TextField(blank=True)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # New field for unit price
 
     def __str__(self):
         return f'{self.transaction_type} - {self.production_record.productName} on {self.transaction_date}'    

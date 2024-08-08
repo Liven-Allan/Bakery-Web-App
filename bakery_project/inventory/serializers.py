@@ -20,7 +20,7 @@ class ProductionRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductionRecord
-        fields = ['id', 'productName', 'rawMaterials', 'quantityProduced', 'quantityUsed', 'productionDate']
+        fields = ['id', 'productName', 'rawMaterials', 'quantityProduced', 'quantityUsed', 'productionDate', 'unit_price']
 
 class ProductionTransactionSerializer(serializers.ModelSerializer):
     quantityUsed = serializers.ListField(child=serializers.IntegerField(), required=False)  # Handle list of integers
@@ -28,4 +28,4 @@ class ProductionTransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductionTransaction
-        fields = ['id', 'production_record', 'transaction_type', 'quantity', 'rawMaterials', 'quantityUsed', 'transaction_date', 'remarks']
+        fields = ['id', 'production_record', 'transaction_type', 'quantity', 'rawMaterials', 'quantityUsed', 'transaction_date', 'remarks', 'unit_price']

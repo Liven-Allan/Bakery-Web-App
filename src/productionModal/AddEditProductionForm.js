@@ -7,20 +7,15 @@ import './AddEditProductionForm.css';
 
 const AddEditProductionForm = ({ production, onSave, onCancel }) => {
   const [productName, setProductName] = useState(production ? production.productName : '');
-  const [rawMaterials, setRawMaterials] = useState(production ? production.rawMaterials.map(material => ({
-    value: material.id,
-    label: material.name,
-    quantity: material.quantity
-  })) : []);
-  const [quantityProduced, setQuantityProduced] = useState(production ? production.quantityProduced : '');
+  const [rawMaterials, setRawMaterials] = useState([]);
+  const [quantityProduced, setQuantityProduced] = useState(production ? production.quantityProduced : '0');
   const [inventoryItems, setInventoryItems] = useState([]);
-  const isEditMode = !!production; // Determine if we are in edit mode
+  const [unitPrice, setUnitPrice] = useState(production ? production.unit_price : '0'); // Ensure unitPrice is a string initially
+  const isEditMode = !!production;
 
   useEffect(() => {
-    // Fetch inventory items from the server
     axios.get('http://localhost:8000/api/inventory/')
       .then(response => {
-        // Map response data to react-select options
         const options = response.data.map(item => ({
           value: item.id,
           label: item.name
@@ -30,50 +25,68 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
       .catch(error => {
         console.error('Error fetching inventory items:', error);
       });
+  }, []);
 
+  useEffect(() => {
     if (production) {
       setProductName(production.productName);
-      setRawMaterials(production.rawMaterials.map(material => ({
-        value: material.id,
-        label: material.name,
-        quantity: material.quantity || 0 // Default quantity if not provided
-      })));
-      setQuantityProduced(production.quantityProduced);
+      setQuantityProduced(production.quantityProduced || '0');
+      setUnitPrice(production.unit_price || '0');
+
+      const initialMaterials = production.rawMaterials.map(materialId => {
+        const material = inventoryItems.find(item => item.value === materialId);
+        return {
+          value: materialId,
+          label: material ? material.label : '',
+          quantity: production.quantityUsed[production.rawMaterials.indexOf(materialId)] || '0'
+        };
+      });
+
+      setRawMaterials(initialMaterials);
     }
-  }, [production]);
+  }, [production, inventoryItems]);
 
   const handleRawMaterialsChange = (selectedOptions) => {
-    // Ensure selected options are updated and maintain quantities
-    setRawMaterials(selectedOptions.map(option => ({
+    const updatedMaterials = selectedOptions ? selectedOptions.map(option => ({
       value: option.value,
       label: option.label,
-      quantity: rawMaterials.find(material => material.value === option.value)?.quantity || 0
-    })));
-  };
-
-  const handleQuantityChange = (index, value) => {
-    const updatedMaterials = [...rawMaterials];
-    updatedMaterials[index].quantity = parseFloat(value) || 0; // Ensure quantity is a number
+      quantity: rawMaterials.find(material => material.value === option.value)?.quantity || '0'
+    })) : [];
     setRawMaterials(updatedMaterials);
   };
 
+  const handleQuantityChange = (index, value) => {
+    if (!isEditMode) {
+      const updatedMaterials = [...rawMaterials];
+      updatedMaterials[index].quantity = value;
+      setRawMaterials(updatedMaterials);
+    }
+  };
+
   const handleSave = () => {
-    // Extract only the raw material IDs
     const rawMaterialIDs = rawMaterials.map(material => material.value);
-
-    // Extract quantities to match the expected format
-    const quantitiesUsed = rawMaterials.map(material => material.quantity);
-
-    const newProduction = {
+    const quantitiesUsed = rawMaterials.map(material => material.quantity || '0');
+  
+    const productionData = {
       id: production ? production.id : null,
       productName,
-      rawMaterials: rawMaterialIDs, // Send an array of IDs
-      quantityProduced: parseFloat(quantityProduced) || 0, // Ensure quantityProduced is a number
-      quantityUsed: quantitiesUsed // Send array of quantities
+      rawMaterials: rawMaterialIDs,
+      quantityUsed: quantitiesUsed,
+      quantityProduced: parseFloat(quantityProduced) || 0,
+      unit_price: parseFloat(unitPrice) || 0, // Ensure unit_price is a number
+      productionDate: production ? production.productionDate : new Date().toISOString().split('T')[0]
     };
-
-    // Pass the newProduction object to the onSave callback
-    onSave(newProduction);
+  
+    const requestMethod = isEditMode ? axios.put : axios.post;
+    const url = isEditMode ? `http://localhost:8000/api/productions/${production.id}/` : 'http://localhost:8000/api/productions/';
+  
+    requestMethod(url, productionData)
+      .then(response => {
+        onSave(response.data);
+      })
+      .catch(error => {
+        console.error('Error saving production record:', error.response ? error.response.data : error.message);
+      });
   };
 
   return (
@@ -87,41 +100,58 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             placeholder="Enter Product Name"
-            disabled={isEditMode} // Disable input if in edit mode
+            disabled={isEditMode}
           />
         </div>
-        <div className="form-group">
-          <label>Raw Materials:</label>
-          <Select
-            isMulti
-            options={inventoryItems}
-            value={rawMaterials.map(material => ({
-              value: material.value,
-              label: material.label
-            }))}
-            onChange={handleRawMaterialsChange}
-          />
-          {rawMaterials.map((material, index) => (
-            <div key={index} className="form-group">
-              <label>Quantity for {material.label}:</label>
+        {!isEditMode && (
+          <>
+            <div className="form-group">
+              <label>Raw Materials:</label>
+              <Select
+                isMulti
+                options={inventoryItems}
+                value={rawMaterials.map(material => ({
+                  value: material.value,
+                  label: material.label
+                }))}
+                onChange={handleRawMaterialsChange}
+              />
+              {rawMaterials.map((material, index) => (
+                <div key={index} className="form-group">
+                  <label>Quantity for {material.label}:</label>
+                  <input
+                    type="number"
+                    value={material.quantity || '0'}
+                    onChange={(e) => handleQuantityChange(index, e.target.value)}
+                    placeholder="Enter Quantity"
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {isEditMode && (
+          <>
+            <div className="form-group">
+              <label>Quantity Produced:</label>
               <input
                 type="number"
-                value={material.quantity || ''}
-                onChange={(e) => handleQuantityChange(index, e.target.value)}
-                placeholder="Enter Quantity"
+                value={quantityProduced || '0'}
+                onChange={(e) => setQuantityProduced(e.target.value)}
+                placeholder="Enter Quantity Produced"
               />
             </div>
-          ))}
-        </div>
-        <div className="form-group">
-          <label>Quantity Produced:</label>
-          <input
-            type="number"
-            value={quantityProduced}
-            onChange={(e) => setQuantityProduced(e.target.value)}
-            placeholder="Enter Quantity Produced"
-          />
-        </div>
+            <div className="form-group">
+              <label>Unit Price:</label>
+              <input
+                type="number"
+                value={unitPrice || '0'}
+                onChange={(e) => setUnitPrice(e.target.value)}
+                placeholder="Enter Unit Price"
+              />
+            </div>
+          </>
+        )}
         <div className="form-buttons">
           <button onClick={handleSave}>{isEditMode ? 'Update' : 'Save'}</button>
           <button onClick={onCancel}>Cancel</button>

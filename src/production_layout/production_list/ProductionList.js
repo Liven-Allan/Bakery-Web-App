@@ -1,7 +1,5 @@
 // src/production_layout/production_list/ProductionList.js
 
-// src/production_layout/production_list/ProductionList.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddEditProductionForm from '../../productionModal/AddEditProductionForm';
@@ -19,11 +17,20 @@ const ProductionList = () => {
   const fetchProductions = async () => {
     try {
       const response = await axios.get(API_URL_PRODUCTIONS);
-      console.log('Fetched productions:', response.data);
+      console.log('Fetched productions:', response.data); // Check the unit_price field here
       setProductions(response.data);
     } catch (error) {
       console.error('Error fetching productions:', error);
     }
+  };
+
+  // Function to safely convert unitPrice to a number and format
+  const formatUnitPrice = (price) => {
+    const numericPrice = parseFloat(price);
+    if (!isNaN(numericPrice)) {
+      return `shs ${numericPrice.toFixed(2)}`;
+    }
+    return 'N/A';
   };
 
   const fetchInventoryItems = async () => {
@@ -60,9 +67,9 @@ const ProductionList = () => {
         production.quantityUsed = [];
       }
 
-      if (editingProduction) {
+      if (production.id) {
         // Update an existing record
-        await axios.put(`${API_URL_PRODUCTIONS}${editingProduction.id}/`, production);
+        await axios.put(`${API_URL_PRODUCTIONS}${production.id}/`, production);
       } else {
         // Create a new record
         await axios.post(API_URL_PRODUCTIONS, production);
@@ -116,6 +123,7 @@ const ProductionList = () => {
             <th>Raw Materials</th>
             <th>Quantity Used</th>
             <th>Quantity Produced</th>
+            <th>Unit Price</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -137,7 +145,8 @@ const ProductionList = () => {
                   ))}
                 </ul>
               </td>
-              <td>{record.quantityProduced}</td>
+              <td>{record.quantityProduced ? record.quantityProduced : 'N/A'}</td>
+              <td>{formatUnitPrice(record.unit_price)}</td>
               <td>
                 <button onClick={() => handleEditClick(record)}>Edit</button>
                 <button onClick={() => handleDelete(record.id)}>Delete</button>
