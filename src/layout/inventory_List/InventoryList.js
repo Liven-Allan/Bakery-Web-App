@@ -52,7 +52,8 @@ const InventoryList = () => {
           product: data.id,
           transaction_type: 'Addition',
           quantity: item.reorder_level, // Use reorder_level as quantity
-          remarks: 'Item added'
+          remarks: 'Item added',
+          unit_price: item.unit_price
         })
         .catch(error => console.error('Error recording transaction:', error));
         setModalIsOpen(false);
@@ -73,7 +74,8 @@ const InventoryList = () => {
           transaction_type: 'Update',
           quantity: item.reorder_level, // Adjust quantity if necessary
           transaction_date: new Date().toISOString(), // Backend will handle the date
-          remarks: 'Item updated'
+          remarks: 'Item updated',
+          unit_price: item.unit_price
         };
   
         // Record the new transaction

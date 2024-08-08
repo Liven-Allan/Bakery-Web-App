@@ -1,5 +1,7 @@
 // src/production_layout/production_list/ProductionList.js
 
+// src/production_layout/production_list/ProductionList.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddEditProductionForm from '../../productionModal/AddEditProductionForm';
@@ -112,7 +114,7 @@ const ProductionList = () => {
           <tr>
             <th>Product Name</th>
             <th>Raw Materials</th>
-            <th>Quantity (Kgs|Pcs|Ltrs)</th>
+            <th>Quantity Used</th>
             <th>Quantity Produced</th>
             <th>Actions</th>
           </tr>

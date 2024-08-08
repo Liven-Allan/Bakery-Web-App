@@ -58,6 +58,8 @@ class ProductionRecordListCreate(generics.ListCreateAPIView):
             production_record=production_record,
             transaction_type='Addition',
             quantity=production_record.quantityProduced,
+            rawMaterials=list(production_record.rawMaterials.values_list('id', flat=True)),  # Include rawMaterials
+            quantityUsed=production_record.quantityUsed,  # Include quantityUsed
             remarks='Initial production entry'
         )
 
@@ -72,6 +74,8 @@ class ProductionRecordDetailView(generics.RetrieveUpdateDestroyAPIView):
             production_record=production_record,
             transaction_type='Update',
             quantity=production_record.quantityProduced,
+            rawMaterials=list(production_record.rawMaterials.values_list('id', flat=True)),  # Include rawMaterials
+            quantityUsed=production_record.quantityUsed,  # Include quantityUsed
             remarks='Production record updated'
         )
 

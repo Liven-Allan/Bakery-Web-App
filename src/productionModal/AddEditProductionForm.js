@@ -14,6 +14,7 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
   })) : []);
   const [quantityProduced, setQuantityProduced] = useState(production ? production.quantityProduced : '');
   const [inventoryItems, setInventoryItems] = useState([]);
+  const isEditMode = !!production; // Determine if we are in edit mode
 
   useEffect(() => {
     // Fetch inventory items from the server
@@ -78,7 +79,7 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
   return (
     <div className="modal-overlay">
       <div className="form-container">
-        <h2>{production ? 'Edit Production Record' : 'Add New Production Record'}</h2>
+        <h2>{isEditMode ? 'Edit Production Record' : 'Add New Production Record'}</h2>
         <div className="form-group">
           <label>Product Name:</label>
           <input
@@ -86,6 +87,7 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             placeholder="Enter Product Name"
+            disabled={isEditMode} // Disable input if in edit mode
           />
         </div>
         <div className="form-group">
@@ -121,7 +123,7 @@ const AddEditProductionForm = ({ production, onSave, onCancel }) => {
           />
         </div>
         <div className="form-buttons">
-          <button onClick={handleSave}>{production ? 'Update' : 'Save'}</button>
+          <button onClick={handleSave}>{isEditMode ? 'Update' : 'Save'}</button>
           <button onClick={onCancel}>Cancel</button>
         </div>
       </div>

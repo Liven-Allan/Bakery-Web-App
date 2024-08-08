@@ -11,7 +11,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
 class InventoryTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryTransaction
-        fields = ['id', 'product', 'transaction_type', 'quantity', 'transaction_date', 'remarks']
+        fields = ['id', 'product', 'transaction_type', 'quantity', 'transaction_date', 'remarks', 'unit_price']
 
 # Production Management
 class ProductionRecordSerializer(serializers.ModelSerializer):
@@ -23,6 +23,9 @@ class ProductionRecordSerializer(serializers.ModelSerializer):
         fields = ['id', 'productName', 'rawMaterials', 'quantityProduced', 'quantityUsed', 'productionDate']
 
 class ProductionTransactionSerializer(serializers.ModelSerializer):
+    quantityUsed = serializers.ListField(child=serializers.IntegerField(), required=False)  # Handle list of integers
+    rawMaterials = serializers.ListField(child=serializers.IntegerField(), required=False)  # Handle list of integers
+
     class Meta:
         model = ProductionTransaction
-        fields = ['id', 'production_record', 'transaction_type', 'quantity', 'transaction_date', 'remarks']
+        fields = ['id', 'production_record', 'transaction_type', 'quantity', 'rawMaterials', 'quantityUsed', 'transaction_date', 'remarks']
