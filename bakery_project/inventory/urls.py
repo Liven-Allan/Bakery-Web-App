@@ -1,7 +1,7 @@
 # inventory/urls.py
 
 from django.urls import path
-from .views import InventoryItemListCreate, InventoryTransactionListCreate,  InventoryItemDetailView, ProductionRecordListCreate, ProductionRecordDetailView, ProductionTransactionListCreate, historical_data
+from .views import InventoryItemListCreate, InventoryTransactionListCreate,  InventoryItemDetailView, ProductionRecordListCreate, ProductionRecordDetailView, historical_data
 
 
 urlpatterns = [
@@ -11,5 +11,4 @@ urlpatterns = [
    path('historical-data/', historical_data, name='historical-data'),
    path('productions/', ProductionRecordListCreate.as_view(), name='productions-list-create'),
    path('productions/<int:pk>/', ProductionRecordDetailView.as_view(), name='productions-detail'),
-   path('production-transactions/', ProductionTransactionListCreate.as_view(), name='production-transactions-list-create'),  # Added URL for production transactions
 ]

@@ -13,24 +13,22 @@ const ProductionList = () => {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [editingProduction, setEditingProduction] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
+  // Fetch productions and sort them by productionDate (including time)
   const fetchProductions = async () => {
     try {
       const response = await axios.get(API_URL_PRODUCTIONS);
-      console.log('Fetched productions:', response.data); // Check the unit_price field here
-      setProductions(response.data);
+      console.log('Fetched productions:', response.data);
+      
+      // Sort productions by productionDate in descending order
+      const sortedProductions = response.data.sort((a, b) => new Date(b.productionDate) - new Date(a.productionDate));
+      
+      setProductions(sortedProductions);
     } catch (error) {
       console.error('Error fetching productions:', error);
     }
-  };
-
-  // Function to safely convert unitPrice to a number and format
-  const formatUnitPrice = (price) => {
-    const numericPrice = parseFloat(price);
-    if (!isNaN(numericPrice)) {
-      return `shs ${numericPrice.toFixed(2)}`;
-    }
-    return 'N/A';
   };
 
   const fetchInventoryItems = async () => {
@@ -60,7 +58,6 @@ const ProductionList = () => {
 
   const handleSave = async (production) => {
     try {
-      // Ensure quantityUsed is an array
       if (production.quantityUsed && !Array.isArray(production.quantityUsed)) {
         production.quantityUsed = [production.quantityUsed];
       } else if (!production.quantityUsed) {
@@ -68,14 +65,11 @@ const ProductionList = () => {
       }
 
       if (production.id) {
-        // Update an existing record
         await axios.put(`${API_URL_PRODUCTIONS}${production.id}/`, production);
       } else {
-        // Create a new record
         await axios.post(API_URL_PRODUCTIONS, production);
       }
 
-      // Refresh the production list and close the form
       fetchProductions();
       setShowForm(false);
     } catch (error) {
@@ -98,6 +92,11 @@ const ProductionList = () => {
     }
   };
 
+  const handleViewClick = (record) => {
+    setSelectedRecord(record);
+    setShowPopup(true);
+  };
+
   const getRawMaterialDetails = (rawMaterials) => {
     return rawMaterials.map(materialId => {
       const item = inventoryItems.find(i => i.id === materialId);
@@ -105,10 +104,38 @@ const ProductionList = () => {
     });
   };
 
+  const formatUnitPrice = (price) => {
+    const numericPrice = parseFloat(price);
+    if (!isNaN(numericPrice)) {
+      return `shs ${numericPrice.toFixed(2)}`;
+    }
+    return 'N/A';
+  };
+
+  const Popup = ({ record, onClose }) => {
+    if (!record) return null;
+  
+    const totalCost = record.quantityProduced * parseFloat(record.unit_price);
+  
+    return (
+      <div className="popup-overlay">
+        <div className="popup-content">
+          <h3>Product Details</h3>
+          <p><strong>Product Name:</strong> {record.productName}</p>
+          <p><strong>Total Cost:</strong> shs {totalCost.toFixed(2)}</p>
+          <p><strong>Production Date:</strong> {new Date(record.productionDate).toLocaleString()}</p> {/* Updated to include time */}
+          <button onClick={onClose}>Close</button>
+        </div>
+      </div>
+    );
+  };
+  
   return (
     <div>
       <h2>Production List</h2>
-      <button onClick={handleAddClick}>Add New Production Record</button>
+      <button className="add-production-button" onClick={handleAddClick}>
+        Add New Production Record
+      </button>
       {showForm && (
         <AddEditProductionForm
           production={editingProduction}
@@ -148,13 +175,19 @@ const ProductionList = () => {
               <td>{record.quantityProduced ? record.quantityProduced : 'N/A'}</td>
               <td>{formatUnitPrice(record.unit_price)}</td>
               <td>
-                <button onClick={() => handleEditClick(record)}>Edit</button>
+                <button onClick={() => handleViewClick(record)} disabled={!record.quantityProduced || !record.unit_price}>
+                  View
+                </button>
+                <button onClick={() => handleEditClick(record)} disabled={record.quantityProduced && record.unit_price}>
+                  Edit
+                </button>
                 <button onClick={() => handleDelete(record.id)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {showPopup && <Popup record={selectedRecord} onClose={() => setShowPopup(false)} />}
     </div>
   );
 };
